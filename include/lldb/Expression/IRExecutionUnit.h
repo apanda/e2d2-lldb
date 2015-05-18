@@ -435,6 +435,28 @@ private:
                                                 bool AbortOnFailure = true) {
             return m_default_mm_ap->getPointerToNamedFunction(Name, AbortOnFailure);
         }
+    
+        /// startExceptionTable - When we finished JITing the function, if exception
+        /// handling is set, we emit the exception table.
+        virtual uint8_t* startExceptionTable(const llvm::Function* F,
+                                             uintptr_t &ActualSize) {
+            return m_default_mm_ap->startExceptionTable(F, ActualSize);
+        }
+
+        /// endExceptionTable - This method is called when the JIT is done emitting
+        /// the exception table.
+        virtual void endExceptionTable(const llvm::Function *F, uint8_t *TableStart,
+                                       uint8_t *TableEnd, uint8_t* FrameRegister) {
+            m_default_mm_ap->endExceptionTable(F, TableStart, TableEnd, FrameRegister);
+        }
+
+        /// deallocateExceptionTable - Free the specified exception table's memory.
+        /// The argument must be the return value from a call to startExceptionTable()
+        /// that hasn't been deallocated yet.  This is never called when the JIT is
+        /// currently emitting an exception table.
+        virtual void deallocateExceptionTable(void *ET) {
+            m_default_mm_ap->deallocateExceptionTable(ET);
+        }
     private:
         std::unique_ptr<JITMemoryManager>    m_default_mm_ap;    ///< The memory allocator to use in actually creating space.  All calls are passed through to it.
         IRExecutionUnit                    &m_parent;           ///< The execution unit this is a proxy for.
